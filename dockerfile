@@ -1,14 +1,34 @@
-# Use an official PHP image as the base image
+
+
 FROM php:8.2-apache
 
-# Install necessary PHP extensions (like mysqli for MySQL/MariaDB)
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    zip \
+    unzip \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) gd pdo pdo_mysql
 
-# Copy the application files from your local directory to the container
-COPY . /var/www/html/Portfolio
+# Enable Apache modules
+RUN a2enmod rewrite
 
-# Set appropriate permissions for the application files
-RUN chown -R www-data:www-data /var/www/html/Portfolio && chmod -R 755 /var/www/html/Portfolio
+# Set working directory
+WORKDIR /var/www/html
 
-# Expose port 80 to allow external access to the web application
+# Copy application files
+COPY . .
+
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
+
+# Apache configuration
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+
 EXPOSE 80
+
+CMD ["apache2-foreground"]
+
