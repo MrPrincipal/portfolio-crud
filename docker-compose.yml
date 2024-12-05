@@ -1,0 +1,23 @@
+version: '3.9'
+
+services:
+  app:
+    build: .
+    container_name: php_crud_app
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html/Portfolio
+    depends_on:
+      - db
+
+  db:
+    image: mariadb:10.5
+    container_name: mariadb_crud
+    environment:
+      MYSQL_ROOT_PASSWORD:
+      MYSQL_DATABASE: portfolio
+      MYSQL_USER: root
+      MYSQL_PASSWORD:
+    ports:
+      - "3306:3306"
